@@ -2,11 +2,11 @@ import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/co
 import { CreateExpenseDto, ExpenseType } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ExpenseService {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private prisma: PrismaService) { }
 
     /**
      * Creates a new expense.
