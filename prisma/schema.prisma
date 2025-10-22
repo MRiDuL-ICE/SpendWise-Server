@@ -1,0 +1,42 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id        Int       @id @default(autoincrement())
+    name      String?
+    email     String    @unique //email need to be unique
+    password  String //store password as hashed
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    Expense   Expense[]
+
+    @@map("users")
+}
+
+model Expense {
+    id        Int         @id @default(autoincrement())
+    title     String
+    amount    Float
+    category  String
+    type      ExpenseType
+    note      String?
+    isLarge   Boolean     @default(false)
+    user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    Int
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+
+    @@map("expenses")
+}
+
+enum ExpenseType {
+    INCOME
+    EXPENSE
+}
