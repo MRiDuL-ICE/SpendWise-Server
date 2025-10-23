@@ -1,98 +1,223 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SpendWise API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust expense tracking API built with NestJS, featuring secure JWT authentication, comprehensive expense management, and detailed financial analytics. This API allows users to track their expenses, categorize spending, and maintain a clear financial overview.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🌐 Live API
 
-## Description
+- Production API URL: `https://spendwise-server-production.up.railway.app/api/spend-wise/v1`
+- Swagger Documentation: [View API Documentation](https://spendwise-server-production.up.railway.app/api/spend-wise/v1/docs)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Setup & Run Instructions
 
-## Project setup
+### Prerequisites
 
-```bash
-$ pnpm install
+- Node.js (v18 or higher)
+- PNPM package manager
+- PostgreSQL database (We're using Supabase PostgreSQL)
+- Git
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/MRiDuL-ICE/SpendWise-Server.git
+   cd SpendWise-Server
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
+   ```env
+   NODE_ENV=development
+   DATABASE_URL="postgresql:your_user@aws-1-ap-south-1.pooler.supabase.com:5432/your_database"
+   DIRECT_URL="postgresql:your_user@localhost:5432/your_database"
+   API_BASE_URL="http://localhost:3000/api/spend-wise/v1"
+   JWT_SECRET="secret"
+   PORT=3000
+   ```
+
+4. Run database migrations:
+   ```bash
+   pnpm prisma migrate dev
+   ```
+
+5. Start the development server:
+   ```bash
+   pnpm start:dev
+   ```
+
+The API will be available at `http://localhost:3000/api/spend-wise/v1`
+Swagger documentation will be at `http://localhost:3000/api/spend-wise/v1/docs`
+
+## 📡 API Endpoints
+
+### Authentication
+
+#### Register User
+- **POST** `/auth/register`
+  ```json
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "securePassword123"
+  }
+  ```
+
+#### Login
+- **POST** `/auth/login`
+  ```json
+  {
+    "email": "john@example.com",
+    "password": "securePassword123"
+  }
+  ```
+
+### Expenses
+
+#### Create Expense
+- **POST** `/expenses`
+  ```json
+  {
+    "title": "Groceries",
+    "amount": 50.25,
+    "date": "2025-10-23",
+    "category": "FOOD"
+  }
+  ```
+
+#### Get All Expenses
+- **GET** `/expenses`
+  - Query Parameters:
+    - `type`: Filter by type
+    - `category`: Filter by category
+
+#### Update Expense
+- **PATCH** `/expenses/:id`
+  ```json
+  {
+    "title": "Updated Groceries",
+    "amount": 55.25
+  }
+  ```
+
+#### Delete Expense
+- **DELETE** `/expenses/:id`
+
+
+## 📝 Example Responses
+
+### Successful Registration
+```json
+{
+  "success": true
+  "message": "User registered successfully",
+  "statusCode": 201,
+}
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+### Successful Login
+```json
+{
+  "statusCode": 200,
+  "message": "Login successful",
+  "data": {
+    "success": true,
+    "message": "User logged in successfully",
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 1698062400,
+    "responseCode": 200
+  }
+}
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+### Get Expenses Response
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "expenses": [
+      {
+        "id": "uuid",
+        "title": "Groceries",
+        "amount": 50.25,
+        "date": "2025-10-23",
+        "category": "FOOD",
+        "createdAt": "2025-10-23T10:30:00Z",
+        "userId": "uuid"
+      }
+    ],
+    "total": 50.25,
+    "count": 1,
+    "analytics": {
+      "byCategory": {
+        "FOOD": 50.25
+      }
+    }
+  }
+}
 ```
 
-## Deployment
+## � Security Features
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. **Authentication**
+   - JWT-based authentication with 24-hour token expiration
+   - Secure password hashing using bcrypt
+   - Protected routes using JWT Guards
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+2. **API Security**
+   - Global API prefix for better versioning
+   - Environment-based configuration
+   - Secure HTTP headers
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+## 🚧 Planned Improvements
+
+1. **Authentication Enhancements**
+   - Implement refresh tokens for better security
+   - Add OAuth2 support for social logins
+   - Email verification for new registrations
+
+2. **Performance Optimizations**
+   - Add response caching for frequently accessed data
+   - Implement pagination for large data sets
+
+3. **Feature Additions**
+   - Custom categories support
+   - Expense analytics and reporting
+   - Bulk expense operations
+   - Export functionality for expense data
+
+## 🛠 Tech Stack
+
+- **Framework:** NestJS
+- **Database:** PostgreSQL (Supabase)
+- **ORM:** Prisma
+- **Authentication:** JWT
+- **API Documentation:** Swagger/OpenAPI
+- **Testing:** Jest
+- **Development Tools:**
+  - ESLint & Prettier for code quality
+  - Git for version control
+  - Railway for deployment
+
+## 📦 Project Structure
+
+```
+src/
+├── config/          # Configuration files
+├── modules/         # Feature modules
+│   ├── auth/       # Authentication module   
+│   └── expense/       # Expense management
+├── common/         # Shared resources
+│   └── guard/      # Authentication guards
+├── prisma/        # Database schema and migrations
+└── main.ts        # Application entry point
+
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 📄 License
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT License

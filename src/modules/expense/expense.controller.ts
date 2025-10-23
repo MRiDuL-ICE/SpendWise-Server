@@ -5,6 +5,8 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
 import { JwtAuthGuard } from 'src/common/guard/auth.guard';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ExpenseResponseDto } from './dto/expense-response.dto';
+import { ExpenseSummaryDto } from './dto/expense-summary.dto';
 
 @Controller('expenses')
 @ApiBearerAuth('access-token')
@@ -23,7 +25,8 @@ export class ExpenseController {
      * @param {Request} req - The request object.
      * @returns {Promise<{ message: string, data: Expense, responseCode: number }>} - A promise that resolves to an object with the create result.
      */
-    @ApiResponse({ status: 201, description: 'Expense created successfully' })
+    @ApiResponse({ status: 201, description: 'Expense created', type: ExpenseResponseDto })
+    @ApiResponse({ status: 429, description: 'Too many requests, please try again later' })
     create(@Body() createExpenseDto: CreateExpenseDto, @Request() req) {
         return this.expenseService.createExpense(createExpenseDto, req.user.userId);
     }
@@ -36,7 +39,8 @@ export class ExpenseController {
      * @param {FilterExpenseDto} filters - The filters to apply to the expenses.
      * @returns {Promise<{ message: string, data: Expense[], responseCode: number }>} - A promise that resolves to an object with the fetched expenses.
      */
-    @ApiResponse({ status: 200, description: 'Expenses fetched successfully' })
+    @ApiResponse({ status: 200, description: 'List of expenses', type: [ExpenseResponseDto] })
+    @ApiResponse({ status: 429, description: 'Too many requests, please try again later' })
     findAll(@Request() req, @Query() filters: FilterExpenseDto) {
         return this.expenseService.findAllExpenses(req.user.userId, filters);
     }
@@ -53,7 +57,8 @@ export class ExpenseController {
      * @param {Request} req - The request object.
      * @returns {Promise<{ message: string, data: Expense, responseCode: number }>} - A promise that resolves to an object with the update result.
      */
-    @ApiResponse({ status: 200, description: 'Expense updated successfully' })
+    @ApiResponse({ status: 200, description: 'Expense updated', type: ExpenseResponseDto })
+    @ApiResponse({ status: 429, description: 'Too many requests, please try again later' })
     update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @Request() req) {
         return this.expenseService.updateExpense(+id, updateExpenseDto, req.user.userId);
     }
@@ -68,13 +73,13 @@ export class ExpenseController {
      * @param {Request} req - The request object.
      * @returns {Promise<{ message: string, responseCode: number }>} - A promise that resolves to an object with the delete result.
      */
-    @ApiResponse({ status: 200, description: 'Expense deleted successfully' })
+    @ApiResponse({ status: 200, description: 'Expense deleted', type: Object })
+    @ApiResponse({ status: 429, description: 'Too many requests, please try again later' })
     delete(@Param('id') id: string, @Request() req) {
         return this.expenseService.deleteExpense(+id, req.user.userId);
     }
 
     @Get('summary')
-    @ApiResponse({ status: 200, description: 'Summary of expenses and income' })
     /**
      * Returns a summary of all expenses and income for the user.
      *
@@ -82,6 +87,8 @@ export class ExpenseController {
      *
      * @returns {Promise<{ totalIncome: number, totalExpenses: number, balance: number, balanceStatus: string }>} - A promise that resolves to an object with the summary.
      */
+    @ApiResponse({ status: 200, description: 'Summary of expenses and income', type: ExpenseSummaryDto })
+    @ApiResponse({ status: 429, description: 'Too many requests, please try again later' })
     getSummary(@Request() req) {
         return this.expenseService.getSummary(req.user.userId);
     }

@@ -37,7 +37,7 @@ export class AuthService {
       throw new Error('User already exists')
     }
 
-    const user = await this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         name: registerUser.name,
         email: registerUser.email,
@@ -90,10 +90,14 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email };
 
+    const token = this.jwtService.sign(payload);
+    const decodedToken = this.jwtService.decode(token);
+
     return {
       success: true,
       message: 'User logged in successfully',
-      accessToken: this.jwtService.sign(payload),
+      accessToken: token,
+      expiresIn: decodedToken.exp,
       responseCode: 200,
     }
   }

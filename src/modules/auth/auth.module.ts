@@ -15,7 +15,11 @@ import { PrismaService } from "src/prisma/prisma.service";
         JwtModule.register({
             global: true,
             secret: appConfig.jwtSecret,
-            signOptions: { expiresIn: '1h' }
+            signOptions: {
+                expiresIn: '24h',
+                issuer: 'SpendWise API',
+                audience: 'SpendWise Users'
+            }
         })
     ],
     controllers: [AuthController],
