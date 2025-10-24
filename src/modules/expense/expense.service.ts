@@ -33,8 +33,8 @@ export class ExpenseService {
 
             return {
                 success: true,
-                data: expense,
                 message: 'Expense created successfully',
+                data: expense,
                 responseCode: 201
             };
         } catch (error) {
