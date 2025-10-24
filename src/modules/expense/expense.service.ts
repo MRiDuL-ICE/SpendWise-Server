@@ -20,21 +20,30 @@ export class ExpenseService {
      */
     async createExpense(createExpenseDto: CreateExpenseDto, userId: number) {
 
-        const isLarge = createExpenseDto.type === ExpenseType.EXPENSE && createExpenseDto.amount > 5000;
+        try {
+            const isLarge = createExpenseDto.type === ExpenseType.EXPENSE && createExpenseDto.amount > 5000;
 
-        const expense = await this.prisma.expense.create({
-            data: {
-                ...createExpenseDto,
-                isLarge,
-                userId,
-            },
-        });
+            const expense = await this.prisma.expense.create({
+                data: {
+                    ...createExpenseDto,
+                    isLarge,
+                    userId,
+                },
+            });
 
-        return {
-            message: 'Expense created successfully',
-            data: expense,
-            responseCode: 201
-        };
+            return {
+                success: true,
+                data: expense,
+                message: 'Expense created successfully',
+                responseCode: 201
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            }
+        }
     }
 
     /**
@@ -45,35 +54,44 @@ export class ExpenseService {
      * @returns {Promise<{ message: string, data: Expense[], count: number, responseCode: number }>} - A promise that resolves to an object with the fetch result.
      */
     async findAllExpenses(userId: number, filters: FilterExpenseDto) {
-        const where: any = { userId };
-        if (filters.type) {
-            where.type = filters.type;
-        }
-        if (filters.category) {
-            where.category = filters.category;
-        }
+        try {
+            const where: any = { userId };
+            if (filters.type) {
+                where.type = filters.type;
+            }
+            if (filters.category) {
+                where.category = filters.category;
+            }
 
 
 
-        const expenses = await this.prisma.expense.findMany({
-            where,
-            orderBy: { createdAt: 'desc' },
-        });
+            const expenses = await this.prisma.expense.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+            });
 
-        if (expenses.length === 0) {
-            // throw new NotFoundException('No expenses found');
+            if (expenses.length === 0) {
+                // throw new NotFoundException('No expenses found');
+                return {
+                    message: 'No expenses found',
+                    data: [],
+                    count: 0
+                };
+            }
             return {
-                message: 'No expenses found',
-                data: [],
-                count: 0
+                success: true,
+                message: 'Expenses fetched successfully',
+                data: expenses,
+                count: expenses.length,
+                responseCode: 200
             };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            }
         }
-        return {
-            message: 'Expenses fetched successfully',
-            data: expenses,
-            count: expenses.length,
-            responseCode: 200
-        };
     }
 
 
@@ -86,21 +104,30 @@ export class ExpenseService {
      * @returns {Promise<{ message: string, data: Expense, responseCode: number }>} - A promise that resolves to an object with the fetched expense.
      */
     async findOneExpense(id: number, userId: number) {
-        const expense = await this.prisma.expense.findUnique({
-            where: { id },
-        });
+        try {
+            const expense = await this.prisma.expense.findUnique({
+                where: { id },
+            });
 
-        if (!expense) {
-            throw new NotFoundException('Expense not found');
+            if (!expense) {
+                throw new NotFoundException('Expense not found');
+            }
+            if (expense.userId !== userId) {
+                throw new UnauthorizedException('Access denied');
+            }
+            return {
+                success: true,
+                message: 'Expense fetched successfully',
+                data: expense,
+                responseCode: 200
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            }
         }
-        if (expense.userId !== userId) {
-            throw new UnauthorizedException('Access denied');
-        }
-        return {
-            message: 'Expense fetched successfully',
-            data: expense,
-            responseCode: 200
-        };
     }
 
     /**
@@ -115,21 +142,35 @@ export class ExpenseService {
      * @returns {Promise<{ message: string, data: Expense, responseCode: number }>} - A promise that resolves to an object with the update result.
      */
     async updateExpense(id: number, updateExpenseDto: UpdateExpenseDto, userId: number) {
-        await this.findOneExpense(id, userId);
+        try {
+            await this.findOneExpense(id, userId);
 
-        const isLarge =
-            updateExpenseDto.type === ExpenseType.EXPENSE &&
-            updateExpenseDto.amount !== undefined &&
-            updateExpenseDto.amount > 5000;
+            const isLarge =
+                updateExpenseDto.type === ExpenseType.EXPENSE &&
+                updateExpenseDto.amount !== undefined &&
+                updateExpenseDto.amount > 5000;
 
 
-        return this.prisma.expense.update({
-            where: { id },
-            data: {
-                ...updateExpenseDto,
-                isLarge,
-            },
-        });
+            await this.prisma.expense.update({
+                where: { id },
+                data: {
+                    ...updateExpenseDto,
+                    isLarge,
+                },
+            });
+
+            return {
+                success: true,
+                message: 'Expense updated successfully',
+                responseCode: 200
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            }
+        }
 
     }
 
@@ -142,11 +183,17 @@ export class ExpenseService {
      */
 
     async deleteExpense(id: number, userId: number) {
-        await this.findOneExpense(id, userId); // Validates existence and ownership
-        await this.prisma.expense.delete({
-            where: { id },
-        });
-        return { message: 'Expense deleted successfully' };
+        try {
+            await this.findOneExpense(id, userId);
+            await this.prisma.expense.delete({ where: { id } });
+            return { message: 'Expense deleted successfully' };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            };
+        }
     }
 
 
@@ -159,27 +206,38 @@ export class ExpenseService {
      */
 
     async getSummary(userId: number) {
-        const [incomeResult, expenseResult] = await Promise.all([
-            this.prisma.expense.aggregate({
-                where: { userId, type: ExpenseType.INCOME },
-                _sum: { amount: true },
-            }),
-            this.prisma.expense.aggregate({
-                where: { userId, type: ExpenseType.EXPENSE },
-                _sum: { amount: true },
-            }),
-        ]);
+        try {
+            const [incomeResult, expenseResult] = await Promise.all([
+                this.prisma.expense.aggregate({
+                    where: { userId, type: ExpenseType.INCOME },
+                    _sum: { amount: true },
+                }),
+                this.prisma.expense.aggregate({
+                    where: { userId, type: ExpenseType.EXPENSE },
+                    _sum: { amount: true },
+                }),
+            ]);
 
-        const totalIncome = incomeResult._sum.amount || 0;
-        const totalExpense = expenseResult._sum.amount || 0;
-        const balance = totalIncome - totalExpense;
-        const balanceStatus = totalExpense > totalIncome ? 'Negative' : 'Positive';
+            const totalIncome = incomeResult._sum.amount || 0;
+            const totalExpense = expenseResult._sum.amount || 0;
+            const balance = totalIncome - totalExpense;
+            const balanceStatus = totalExpense > totalIncome ? 'Negative' : 'Positive';
 
-        return {
-            totalIncome,
-            totalExpense,
-            balance,
-            balanceStatus,
-        };
+            return {
+                success: true,
+                message: 'Summary fetched successfully',
+                totalIncome,
+                totalExpense,
+                balance,
+                balanceStatus,
+                responseCode: 200,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                responseCode: 401
+            }
+        }
     }
 }
