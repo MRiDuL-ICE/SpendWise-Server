@@ -29,14 +29,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/spend-wise/v1/docs', app, document);
 
-  app.getHttpAdapter().get('/health', (req, res) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
 
-  // -------------------------------------------------
-  // 4. Port & host – **critical for Railway**
-  // -------------------------------------------------
   const port = Number(process.env.PORT) || appConfig.port || 3000;
   const host = '0.0.0.0';
 
@@ -44,7 +37,7 @@ async function bootstrap() {
 
   const baseUrl = process.env.API_BASE_URL || `http://localhost:${port}`;
   console.log(`Server running on port: ${port}`);
-  console.log(`Health check: ${baseUrl}/health`);
+  console.log(`Health check: ${baseUrl}`);
   console.log(`Swagger docs: ${baseUrl}/docs`);
 }
 
