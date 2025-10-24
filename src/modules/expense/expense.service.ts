@@ -186,7 +186,11 @@ export class ExpenseService {
         try {
             await this.findOneExpense(id, userId);
             await this.prisma.expense.delete({ where: { id } });
-            return { message: 'Expense deleted successfully' };
+            return {
+                success: true,
+                message: 'Expense deleted successfully',
+                responseCode: 200,
+            };
         } catch (error) {
             return {
                 success: false,

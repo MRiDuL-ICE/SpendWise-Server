@@ -65,7 +65,11 @@ export class AuthService {
       })
 
       if (isExists > 0) {
-        throw new Error('User already exists')
+        return {
+          success: false,
+          message: 'User already exists',
+          responseCode: 401
+        }
       }
 
       await this.prisma.user.create({
