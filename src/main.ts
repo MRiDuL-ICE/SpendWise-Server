@@ -42,7 +42,7 @@ async function bootstrap() {
 
   await app.listen(port, host);
 
-  const baseUrl = process.env.RAILWAY_PUBLIC_URL || `http://localhost:${port}`;
+  const baseUrl = process.env.API_BASE_URL || `http://localhost:${port}`;
   console.log(`Server running on port: ${port}`);
   console.log(`Health check: ${baseUrl}/health`);
   console.log(`Swagger docs: ${baseUrl}/api/spend-wise/v1/docs`);
