@@ -23,22 +23,28 @@ export class AuthService {
   }
 
   /**
-   * Format the expiration time of a JWT token in a human-readable format.
-   *
+   * Formats the expiration time in hours given a decoded JWT token.
+   * 
    * @param {any} decodedToken - The decoded JWT token.
-   * @returns {Promise<string>} - A promise that resolves to a string representing the expiration time in the format of "Xh Ym".
+   * @returns {Promise<string>} - A promise that resolves to the formatted expiration time in hours.
    */
-  async formatExpiryReadable(decodedToken: any) {
+  async formatExpiryInHours(decodedToken: any) {
+
+    const exp = typeof decodedToken === 'number'
+      ? decodedToken
+      : decodedToken?.exp;
+
+    if (!exp) return 'No expiration found';
+
     const currentTime = Math.floor(Date.now() / 1000);
-    const expiresIn = await decodedToken.exp - currentTime;
+    const expiresInSeconds = await exp - currentTime;
 
-    if (expiresIn <= 0) return 'Token already expired';
+    if (expiresInSeconds <= 0) return 'Token already expired';
 
-    const hours = Math.floor(expiresIn / 3600);
-    const minutes = Math.floor((expiresIn % 3600) / 60);
-
-    return `${hours}h ${minutes}m`;
+    const hours = (expiresInSeconds / 3600).toFixed(2);
+    return `${hours} hours`;
   }
+
 
 
 
@@ -128,7 +134,7 @@ export class AuthService {
         success: true,
         message: 'User logged in successfully',
         accessToken: token,
-        expiresIn: this.formatExpiryReadable(decodedToken.exp),
+        expiresIn: await this.formatExpiryInHours(decodedToken.exp),
         responseCode: 200,
       }
     } catch (error) {
