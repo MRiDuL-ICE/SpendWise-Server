@@ -197,7 +197,6 @@ Swagger documentation will be at `http://localhost:3000/api/spend-wise/v1/docs`
 - **ORM:** Prisma
 - **Authentication:** JWT
 - **API Documentation:** Swagger/OpenAPI
-- **Testing:** Jest
 - **Development Tools:**
   - ESLint & Prettier for code quality
   - Git for version control
