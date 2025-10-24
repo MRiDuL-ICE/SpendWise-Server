@@ -13,7 +13,7 @@ A robust expense tracking API built with NestJS, featuring secure JWT authentica
 
 - Node.js (v18 or higher)
 - PNPM package manager
-- PostgreSQL database (We're using Supabase PostgreSQL)
+- PostgreSQL database (I'm using Supabase PostgreSQL)
 - Git
 
 ### Installation
